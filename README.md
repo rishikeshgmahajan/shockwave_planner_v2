@@ -4,8 +4,8 @@
 
 **Version**: 2.0.0  
 **Created**: December 2025  
-**For**: NZDF 62SQN Space Operations Centre  
-**Author**: Remix Astronautics  
+**For**: Remix Astronautics 
+**Author**: Phil Holdstock
 
 ---
 
