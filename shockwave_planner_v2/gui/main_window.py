@@ -491,29 +491,29 @@ class MainWindow(QMainWindow):
         # Master Activity Schedule - Launch
         self.timeline_view = TimelineView(self.db)
         self.timeline_view.launch_selected.connect(self.edit_launch)
-        self.tab_widget.addTab(self.timeline_view, "ðŸš€ Master Activity Schedule - Launch")
+        self.tab_widget.addTab(self.timeline_view, "Master Activity Schedule - Launch")
         
         # Master Activity Schedule - Re-entry  
         self.reentry_timeline_view = ReentryTimelineView(self.db)
         self.reentry_timeline_view.reentry_selected.connect(self.edit_reentry)
-        self.tab_widget.addTab(self.reentry_timeline_view, "ðŸ›¬ Master Activity Schedule - Re-entry")
+        self.tab_widget.addTab(self.reentry_timeline_view, "Master Activity Schedule - Re-entry")
         
         # Enhanced List view
         self.list_view = EnhancedListView(self.db)
         self.list_view.launch_selected.connect(self.edit_launch)
-        self.tab_widget.addTab(self.list_view, "📋 Launch List View")
+        self.tab_widget.addTab(self.list_view, "Launch List View")
         
         # Statistics view
         stats_widget = self.create_statistics_widget()
-        self.tab_widget.addTab(stats_widget, "📊 Statistics")
+        self.tab_widget.addTab(stats_widget, "Launch Statistics")
         
         # Launch Sites view
         self.sites_view = LaunchSitesView(self.db, parent=self)
-        self.tab_widget.addTab(self.sites_view, "🌍 Launch Sites")
+        self.tab_widget.addTab(self.sites_view, "Launch Sites")
         
         # Rockets view
         self.rockets_view = RocketsView(self.db, parent=self)
-        self.tab_widget.addTab(self.rockets_view, "🚀 Rockets")
+        self.tab_widget.addTab(self.rockets_view, "Launch Vehicles")
         
         main_layout.addWidget(self.tab_widget)
         
