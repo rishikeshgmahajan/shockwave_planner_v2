@@ -8,7 +8,7 @@ Date: December 2025
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QTableWidget, QTableWidgetItem, QHeaderView,
                               QMessageBox, QDialog, QFormLayout, QLineEdit,
-                              QDialogButtonBox, QDoubleSpinBox, QComboBox)
+                              QDialogButtonBox, QDoubleSpinBox, QComboBox, QSpinBox)
 from PyQt6.QtCore import Qt
 
 
@@ -49,9 +49,9 @@ class LaunchSitesView(QWidget):
         
         # Table
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
-            'ID', 'Location', 'Launch Pad', 'Country', 'Latitude', 'Longitude'
+            'ID', 'Location', 'Launch Pad', 'Country', 'Turnaround (days)', 'Latitude', 'Longitude'
         ])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -75,11 +75,15 @@ class LaunchSitesView(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(site.get('launch_pad', '')))
             self.table.setItem(row, 3, QTableWidgetItem(site.get('country', '')))
             
+            # Turnaround days
+            turnaround = site.get('turnaround_days', 7)
+            self.table.setItem(row, 4, QTableWidgetItem(str(turnaround)))
+            
             lat = site.get('latitude')
-            self.table.setItem(row, 4, QTableWidgetItem(f"{lat:.4f}°" if lat else ''))
+            self.table.setItem(row, 5, QTableWidgetItem(f"{lat:.4f}°" if lat else ''))
             
             lon = site.get('longitude')
-            self.table.setItem(row, 5, QTableWidgetItem(f"{lon:.4f}°" if lon else ''))
+            self.table.setItem(row, 6, QTableWidgetItem(f"{lon:.4f}°" if lon else ''))
     
     def add_site(self):
         """Add a new launch site"""
@@ -166,6 +170,14 @@ class SiteEditorDialog(QDialog):
         self.country_edit.setPlaceholderText("e.g., USA, China, Russia")
         layout.addRow("Country:", self.country_edit)
         
+        # Turnaround Days
+        self.turnaround_spin = QSpinBox()
+        self.turnaround_spin.setRange(1, 90)
+        self.turnaround_spin.setValue(7)
+        self.turnaround_spin.setSuffix(" days")
+        self.turnaround_spin.setToolTip("Number of days required between launches at this pad")
+        layout.addRow("Pad Turnaround:", self.turnaround_spin)
+        
         # Latitude
         self.lat_spin = QDoubleSpinBox()
         self.lat_spin.setRange(-90, 90)
@@ -203,6 +215,10 @@ class SiteEditorDialog(QDialog):
             self.pad_edit.setText(site.get('launch_pad', ''))
             self.country_edit.setText(site.get('country', ''))
             
+            # Turnaround days
+            if site.get('turnaround_days'):
+                self.turnaround_spin.setValue(site['turnaround_days'])
+            
             if site.get('latitude'):
                 self.lat_spin.setValue(site['latitude'])
             
@@ -223,6 +239,7 @@ class SiteEditorDialog(QDialog):
             'location': location,
             'launch_pad': pad,
             'country': self.country_edit.text().strip() or None,
+            'turnaround_days': self.turnaround_spin.value(),
             'latitude': self.lat_spin.value() if self.lat_spin.value() != 0 else None,
             'longitude': self.lon_spin.value() if self.lon_spin.value() != 0 else None,
             'site_type': 'LAUNCH'
