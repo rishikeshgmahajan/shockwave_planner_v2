@@ -11,11 +11,12 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
+DEFAULT_DB_PATH = r'./shockwave_planner_v2/shockwave_planner.db'
 
 class LaunchDatabase:
     """Database operations for SHOCKWAVE PLANNER"""
     
-    def __init__(self, db_path: str = 'shockwave_planner.db'):
+    def __init__(self, db_path: str = DEFAULT_DB_PATH):
         """Initialize database connection"""
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)
