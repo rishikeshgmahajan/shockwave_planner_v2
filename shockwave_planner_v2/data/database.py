@@ -11,12 +11,11 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-DEFAULT_DB_PATH = r'./shockwave_planner_v2/shockwave_planner.db'
 
 class LaunchDatabase:
     """Database operations for SHOCKWAVE PLANNER"""
     
-    def __init__(self, db_path: str = DEFAULT_DB_PATH):
+    def __init__(self, db_path: str = 'shockwave_planner.db'):
         """Initialize database connection"""
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)
@@ -39,6 +38,7 @@ class LaunchDatabase:
                 country TEXT,
                 site_type TEXT DEFAULT 'LAUNCH',
                 external_id TEXT,
+                turnaround_days INTEGER DEFAULT 7,
                 UNIQUE(location, launch_pad)
             )
         ''')
@@ -158,6 +158,7 @@ class LaunchDatabase:
                 country TEXT,
                 zone_type TEXT,
                 external_id TEXT,
+                turnaround_days INTEGER DEFAULT 7,
                 UNIQUE(location, drop_zone)
             )
         ''')
@@ -200,6 +201,9 @@ class LaunchDatabase:
         if cursor.fetchone()[0] == 0:
             self._init_default_statuses()
         
+        # Run migrations
+        self._run_migrations()
+        
         self.conn.commit()
     
     def _init_default_statuses(self):
@@ -222,6 +226,37 @@ class LaunchDatabase:
         ''', statuses)
         self.conn.commit()
     
+    def _run_migrations(self):
+        """Run database migrations for schema updates"""
+        cursor = self.conn.cursor()
+        
+        # Migration: Add turnaround_days to launch_sites
+        try:
+            cursor.execute("SELECT turnaround_days FROM launch_sites LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            print("🔧 Running migration: Adding turnaround_days to launch_sites...")
+            cursor.execute('''
+                ALTER TABLE launch_sites 
+                ADD COLUMN turnaround_days INTEGER DEFAULT 7
+            ''')
+            self.conn.commit()
+            print("   ✓ Migration complete")
+        
+        # Migration: Add turnaround_days to reentry_sites  
+        try:
+            cursor.execute("SELECT turnaround_days FROM reentry_sites LIMIT 1")
+        except sqlite3.OperationalError:
+            # Column doesn't exist, add it
+            print("🔧 Running migration: Adding turnaround_days to reentry_sites...")
+            cursor.execute('''
+                ALTER TABLE reentry_sites 
+                ADD COLUMN turnaround_days INTEGER DEFAULT 7
+            ''')
+            self.conn.commit()
+            print("   ✓ Migration complete")
+
+    
     # ==================== SITE OPERATIONS ====================
     
     def get_all_sites(self, site_type: str = 'LAUNCH') -> List[Dict]:
@@ -230,14 +265,14 @@ class LaunchDatabase:
             cursor = self.conn.cursor()
             cursor.execute('''
                 SELECT reentry_site_id as site_id, location, drop_zone as launch_pad,
-                       latitude, longitude, country, zone_type
+                       latitude, longitude, country, zone_type, turnaround_days
                 FROM reentry_sites
                 ORDER BY location, drop_zone
             ''')
         else:
             cursor = self.conn.cursor()
             cursor.execute('''
-                SELECT site_id, location, launch_pad, latitude, longitude, country
+                SELECT site_id, location, launch_pad, latitude, longitude, country, turnaround_days
                 FROM launch_sites
                 ORDER BY location, launch_pad
             ''')
@@ -250,8 +285,8 @@ class LaunchDatabase:
         
         if site_type == 'REENTRY':
             cursor.execute('''
-                INSERT INTO reentry_sites (location, drop_zone, latitude, longitude, country, zone_type, external_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO reentry_sites (location, drop_zone, latitude, longitude, country, zone_type, external_id, turnaround_days)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 site_data['location'],
                 site_data.get('drop_zone', 'Unknown'),
@@ -259,12 +294,13 @@ class LaunchDatabase:
                 site_data.get('longitude'),
                 site_data.get('country'),
                 site_data.get('zone_type'),
-                site_data.get('external_id')
+                site_data.get('external_id'),
+                site_data.get('turnaround_days', 7)
             ))
         else:
             cursor.execute('''
-                INSERT INTO launch_sites (location, launch_pad, latitude, longitude, country, site_type, external_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO launch_sites (location, launch_pad, latitude, longitude, country, site_type, external_id, turnaround_days)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 site_data['location'],
                 site_data['launch_pad'],
@@ -272,7 +308,8 @@ class LaunchDatabase:
                 site_data.get('longitude'),
                 site_data.get('country'),
                 site_type,
-                site_data.get('external_id')
+                site_data.get('external_id'),
+                site_data.get('turnaround_days', 7)
             ))
         
         self.conn.commit()
@@ -288,7 +325,7 @@ class LaunchDatabase:
             cursor.execute('''
                 UPDATE reentry_sites SET
                     location = ?, drop_zone = ?, latitude = ?, longitude = ?,
-                    country = ?, zone_type = ?
+                    country = ?, zone_type = ?, turnaround_days = ?
                 WHERE reentry_site_id = ?
             ''', (
                 site_data['location'],
@@ -297,13 +334,14 @@ class LaunchDatabase:
                 site_data.get('longitude'),
                 site_data.get('country'),
                 site_data.get('zone_type'),
+                site_data.get('turnaround_days', 7),
                 site_id
             ))
         else:
             cursor.execute('''
                 UPDATE launch_sites SET
                     location = ?, launch_pad = ?, latitude = ?, longitude = ?,
-                    country = ?
+                    country = ?, turnaround_days = ?
                 WHERE site_id = ?
             ''', (
                 site_data['location'],
@@ -311,6 +349,7 @@ class LaunchDatabase:
                 site_data.get('latitude'),
                 site_data.get('longitude'),
                 site_data.get('country'),
+                site_data.get('turnaround_days', 7),
                 site_id
             ))
         
