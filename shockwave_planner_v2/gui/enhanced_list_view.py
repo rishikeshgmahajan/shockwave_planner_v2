@@ -98,7 +98,7 @@ class EnhancedListView(QWidget):
         self.launch_table = QTableWidget()
         self.launch_table.setColumnCount(9)
         self.launch_table.setHorizontalHeaderLabels([
-            'Date', 'Time', 'Site', 'Rocket', 'Mission', 
+            'Date (UTC)', 'Time (UTC)', 'Site', 'Rocket', 'Mission', 
             'Payload', 'Orbit','NOTAM', 'Status'
         ])
         self.launch_table.verticalHeader().setDefaultSectionSize(45)
