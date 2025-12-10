@@ -25,6 +25,7 @@ from gui.enhanced_list_view import EnhancedListView
 from gui.timeline_view_reentry import ReentryTimelineView
 from gui.reentry_dialog import ReentryDialog
 from gui.launch_sites_view import LaunchSitesView
+from gui.drop_zones_view import DropZonesView
 from gui.rockets_view import RocketsView
 from gui.reentry_vehicles_view import ReentryVehiclesView
 
@@ -511,6 +512,10 @@ class MainWindow(QMainWindow):
         self.sites_view = LaunchSitesView(self.db, parent=self)
         self.tab_widget.addTab(self.sites_view, "Launch Sites")
         
+        # Drop Zones view
+        self.drop_zones_view = DropZonesView(self.db, parent=self)
+        self.tab_widget.addTab(self.drop_zones_view, "Drop Zones")
+        
         # Rockets view
         self.rockets_view = RocketsView(self.db, parent=self)
         self.tab_widget.addTab(self.rockets_view, "Launch Vehicles")
@@ -759,6 +764,7 @@ class MainWindow(QMainWindow):
         self.reentry_timeline_view.update_timeline()
         self.list_view.refresh()
         self.sites_view.refresh_table()
+        self.drop_zones_view.refresh_table()
         self.rockets_view.refresh_table()
         self.reentry_vehicles_tab.refresh_table()
         
