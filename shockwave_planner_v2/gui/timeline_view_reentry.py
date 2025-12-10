@@ -133,8 +133,7 @@ class ReentryTimelineView(QWidget):
                     'drop_zone': zone.get('launch_pad', 'Unknown'),
                     'site_id': zone['site_id'],
                     'turnaround_days': zone.get('turnaround_days', self.zone_turnaround_days),
-                    'reentries': zone_reentries.get(zone_key, []),
-                    'prev_month_reentries': zone_prev_reentries.get(zone_key, [])  # For turnaround carry-over
+                    'reentries': zone_reentries.get(zone_key, [])
                 })
         
         # Build rows for display
@@ -247,8 +246,6 @@ class ReentryTimelineView(QWidget):
                         # Check for recovery period using zone-specific turnaround
                         in_recovery = False
                         zone_turnaround = row_data.get('turnaround_days', self.zone_turnaround_days)
-                        
-                        # Check re-entries in current month
                         for reentry in row_data['reentries']:
                             reentry_day = datetime.strptime(reentry['reentry_date'], '%Y-%m-%d').day
                             if reentry_day < col_day <= reentry_day + zone_turnaround:
