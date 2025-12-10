@@ -101,10 +101,21 @@ class EnhancedListView(QWidget):
             'Date', 'Time', 'Site', 'Rocket', 'Mission', 
             'Payload', 'Orbit','NOTAM', 'Status'
         ])
+        self.launch_table.verticalHeader().setDefaultSectionSize(45)
         self.launch_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.launch_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.launch_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.launch_table.cellDoubleClicked.connect(self.on_launch_double_clicked)
+        self.launch_table.setStyleSheet("""
+            QTableWidget {
+                font-size: 17px;
+            }
+            QHeaderView::section {
+                font-size: 12px;
+                font-weight: bold;
+                height: 35px;
+            }
+        """)
         
         layout.addWidget(self.launch_table)
         
@@ -165,39 +176,44 @@ class EnhancedListView(QWidget):
             launches = self.db.get_launches_by_date_range(start_date, end_date)
         
         self.launch_table.setRowCount(len(launches))
+
+        def create_centered_item(text):
+            item = QTableWidgetItem(str(text))
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter) 
+            return item
         
         for row, launch in enumerate(launches):
             # Date
-            self.launch_table.setItem(row, 0, QTableWidgetItem(launch.get('launch_date', '')))
+            self.launch_table.setItem(row, 0, create_centered_item(launch.get('launch_date', '')))
             
             # Time
             time_str = launch.get('launch_time', '')[:5] if launch.get('launch_time') else ''
-            self.launch_table.setItem(row, 1, QTableWidgetItem(time_str))
+            self.launch_table.setItem(row, 1, create_centered_item(time_str))
             
             # Site
             site_str = f"{launch.get('location', '')} {launch.get('launch_pad', '')}"
-            self.launch_table.setItem(row, 2, QTableWidgetItem(site_str))
+            self.launch_table.setItem(row, 2, create_centered_item(site_str))
             
             # Rocket
-            self.launch_table.setItem(row, 3, QTableWidgetItem(launch.get('rocket_name', '')))
+            self.launch_table.setItem(row, 3, create_centered_item(launch.get('rocket_name', '')))
             
             # Mission
-            self.launch_table.setItem(row, 4, QTableWidgetItem(launch.get('mission_name', '')))
+            self.launch_table.setItem(row, 4, create_centered_item(launch.get('mission_name', '')))
             
             # Payload
-            self.launch_table.setItem(row, 5, QTableWidgetItem(launch.get('payload_name', '')))
+            self.launch_table.setItem(row, 5, create_centered_item(launch.get('payload_name', '')))
             
             # Orbit
-            self.launch_table.setItem(row, 6, QTableWidgetItem(launch.get('orbit_type', '')))
+            self.launch_table.setItem(row, 6, create_centered_item(launch.get('orbit_type', '')))
             
             # NOTAM
-            notam_item = QTableWidgetItem(launch.get('notam_reference', ''))
+            notam_item = create_centered_item(launch.get('notam_reference', ''))
             if launch.get('notam_reference'):
                 notam_item.setBackground(QColor(255, 255, 200))  # Light yellow highlight
             self.launch_table.setItem(row, 7, notam_item)
             
             # Status
-            status_item = QTableWidgetItem(launch.get('status_name', ''))
+            status_item = create_centered_item(launch.get('status_name', ''))
             if launch.get('status_color'):
                 status_item.setBackground(QColor(launch['status_color']))
             self.launch_table.setItem(row, 8, status_item)
